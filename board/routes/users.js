@@ -20,6 +20,7 @@ router.get("/new", (req, res) => {
 // create
 router.post("/", (req, res) => {
   User.create(req.body, (err, user) => {
+    console.log(user);
     if (err) return res.json(err);
     res.redirect("/users");
   });
@@ -28,6 +29,7 @@ router.post("/", (req, res) => {
 // show
 router.get("/:username", (req, res) => {
   User.findOne({ username: req.params.username }, (err, user) => {
+    console.log(user);
     if (err) return res.json(err);
     res.render("users/show", { user: user });
   });
@@ -50,12 +52,13 @@ router.put("/:username", (req, res, next) => {
 
       user.originalPassword = user.password;
       user.password = req.body.newPassword
-        ? req.bodynewPassword
+        ? req.body.newPassword
         : user.password;
       for (const p in req.body) {
         user[p] = req.body[p];
       }
       user.save((err, user) => {
+        console.log(user);
         if (err) return res.json(err);
         res.redirect("/users/" + user.username);
       });
