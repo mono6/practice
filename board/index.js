@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import path from "path";
 import homeRouter from "./routes/home.js";
 import postsRouter from "./routes/posts.js";
+import userRouter from "./routes/users.js";
 const __dirname = path.resolve();
 const app = express();
 dotenv.config();
@@ -30,6 +31,7 @@ app.use(methodOverride("_method"));
 // Routes
 app.use("/", homeRouter);
 app.use("/posts", postsRouter);
+app.use("/users", userRouter);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
