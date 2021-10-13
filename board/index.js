@@ -4,6 +4,7 @@ import methodOverride from "method-override";
 import dotenv from "dotenv";
 import path from "path";
 import homeRouter from "./routes/home.js";
+import postsRouter from "./routes/posts.js";
 const __dirname = path.resolve();
 const app = express();
 dotenv.config();
@@ -28,7 +29,16 @@ app.use(methodOverride("_method"));
 
 // Routes
 app.use("/", homeRouter);
+app.use("/posts", postsRouter);
 
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(404).send("일치하는 주소가 없습니다!");
+});
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("서버 에러!"); // 500 상태 표시 후 에러 메시지 전송
+});
 // Port setting
 const port = process.env.PORT;
 app.listen(port, () => {
