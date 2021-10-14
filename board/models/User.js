@@ -6,6 +6,8 @@ const userSchema = mongoose.Schema(
     username: {
       type: String,
       required: [true, "Username is required!"],
+      match: [/^.{4,12}$/, "Should be 4-12 characters!"],
+      trim: true,
       unique: true,
     },
     password: {
@@ -13,8 +15,20 @@ const userSchema = mongoose.Schema(
       required: [true, "Password is required!"],
       select: false,
     },
-    name: { type: String, required: [true, "Name is required!"] },
-    email: { type: String },
+    name: {
+      type: String,
+      required: [true, "Name is required!"],
+      match: [/^.{4,12}$/, "Should be 4-12 characters!"],
+      trim: true,
+    },
+    email: {
+      type: String,
+      match: [
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Should be a vaild email address!",
+      ],
+      trim: true,
+    },
   },
   {
     toObject: { virtuals: true },
@@ -58,7 +72,10 @@ userSchema
     this._newPassword = value;
   });
 
-//   password validation
+// password validation // 2
+const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,16}$/;
+const passwordRegexErrorMessage =
+  "Should be minimum 8 characters of alphabet and number combination!";
 userSchema.path("password").validate(function (v) {
   const user = this;
 
@@ -70,8 +87,9 @@ userSchema.path("password").validate(function (v) {
         "Password Confirmation is required."
       );
     }
-
-    if (user.password !== user.passwordConfirmation) {
+    if (!passwordRegex.test(user.password)) {
+      user.invalidate("password", passwordRegexErrorMessage);
+    } else if (user.password !== user.passwordConfirmation) {
       user.invalidate(
         "passwordConfirmation",
         "Password Confirmation does not matched!"
@@ -87,8 +105,9 @@ userSchema.path("password").validate(function (v) {
     ) {
       user.invalidate("currentPassword", "Current Password is invalid!");
     }
-
-    if (user.newPassword !== user.passwordConfirmation) {
+    if (user.newPassword && !passwordRegex.test(user.newPassword)) {
+      user.invalidate("newPassword", passwordRegexErrorMessage);
+    } else if (user.newPassword !== user.passwordConfirmation) {
       user.invalidate(
         "passwordConfirmation",
         "Password Confirmation does not matched!"

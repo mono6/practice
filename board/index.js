@@ -3,6 +3,9 @@ import mongoose from "mongoose";
 import methodOverride from "method-override";
 import dotenv from "dotenv";
 import path from "path";
+import flash from "connect-flash";
+import session from "express-session";
+
 import homeRouter from "./routes/home.js";
 import postsRouter from "./routes/posts.js";
 import userRouter from "./routes/users.js";
@@ -27,6 +30,8 @@ app.use(express.static(__dirname + "/public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
+app.use(flash());
+app.use(session({ secret: "MySecret", resave: true, saveUninitialized: true }));
 
 // Routes
 app.use("/", homeRouter);
