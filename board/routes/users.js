@@ -16,7 +16,7 @@ router.get("/", (req, res) => {
 router.get("/new", (req, res) => {
   const user = req.flash("user")[0] || {};
   const errors = req.flash("error")[0] || {};
-  console.log("user", user, "errors", errors);
+  console.log("errors", errors);
   res.render("users/new", { user: user, errors: errors });
 });
 

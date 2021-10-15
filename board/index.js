@@ -6,6 +6,7 @@ import path from "path";
 import flash from "connect-flash";
 import session from "express-session";
 
+import passport from "./config/passport.js";
 import homeRouter from "./routes/home.js";
 import postsRouter from "./routes/posts.js";
 import userRouter from "./routes/users.js";
@@ -32,6 +33,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(flash());
 app.use(session({ secret: "MySecret", resave: true, saveUninitialized: true }));
+
+//Passoprt //2
+app.use(passport.initialize());
+app.use(passport.session());
+
+//Custom Middlewares//3
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.isAuthenticated();
+  res.locals.currentUser = req.user;
+  next();
+});
 
 // Routes
 app.use("/", homeRouter);
