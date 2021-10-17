@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import express from "express";
+import util from "../util.js";
 const router = express.Router();
 
 // Index//1
@@ -26,7 +27,7 @@ router.post("/", (req, res) => {
     console.log(user);
     if (err) {
       req.flash("user", req.body);
-      req.flash("error", parseError(err));
+      req.flash("error", util.parseError(err));
       return res.redirect("/users/new");
     }
     res.redirect("/users");
@@ -82,7 +83,7 @@ router.put("/:username", (req, res, next) => {
         console.log(user);
         if (err) {
           req.flash("user", req.body);
-          req.flash("errors", parseError(err));
+          req.flash("errors", util.parseError(err));
           return res.redirect("/users/" + req.params.username + "/edit");
         }
         res.redirect("/users/" + user.username);
@@ -99,19 +100,3 @@ router.delete("/:username", (req, res) => {
 });
 
 export default router;
-
-// functions
-function parseError(errors) {
-  const parsed = {};
-  if (errors.name == "ValidationError") {
-    for (const name in errors.errors) {
-      const validationError = errors.errors[name];
-      parsed[name] = { message: validationError.message };
-    }
-  } else if (errors.code == "11000" && errors.errmsg.indexOf("username") > 0) {
-    parsed.username = { message: "This username already exists!" };
-  } else {
-    parsed.unhandled = JSON.stringify(errors);
-  }
-  return parsed;
-}
