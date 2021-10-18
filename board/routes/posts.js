@@ -6,6 +6,7 @@ const router = express.Router();
 // Index
 router.get("/", (req, res) => {
   Post.find({})
+    .populate("author")
     .sort("-createdAt")
     .exec((err, posts) => {
       if (err) return res.json(err);
@@ -23,6 +24,7 @@ router.get("/new", (req, res) => {
 
 // create
 router.post("/", (req, res) => {
+  req.body.author = req.user._id;
   Post.create(req.body, (err, post) => {
     if (err) {
       req.flash("post", req.body);
@@ -35,10 +37,12 @@ router.post("/", (req, res) => {
 
 // show
 router.get("/:id", (req, res) => {
-  Post.findOne({ _id: req.params.id }, (err, post) => {
-    if (err) return res.json(err);
-    res.render("posts/show", { post: post });
-  });
+  Post.findOne({ _id: req.params.id })
+    .populate("author")
+    .exec((err, post) => {
+      if (err) return res.json(err);
+      res.render("posts/show", { post: post });
+    });
 });
 
 // edit
