@@ -14,4 +14,17 @@ util.parseError = (errors) => {
   }
   return parsed;
 };
+util.isLoggedin = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    next();
+  } else {
+    req.flash("errors", { login: "로그인 먼저 하세유" });
+    res.redirect("/login");
+  }
+};
+util.noPermission = (req, res) => {
+  req.flash("errors", { login: "권한이 없다" });
+  req.logout();
+  req.redirect("/login");
+};
 export default util;

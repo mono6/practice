@@ -3,16 +3,6 @@ import express from "express";
 import util from "../util.js";
 const router = express.Router();
 
-// Index//1
-router.get("/", (req, res) => {
-  User.find({})
-    .sort({ username: 1 })
-    .exec((err, users) => {
-      if (err) return res.json(err);
-      res.render("users/index", { users: users });
-    });
-});
-
 // New
 router.get("/new", (req, res) => {
   const user = req.flash("user")[0] || {};
@@ -35,7 +25,7 @@ router.post("/", (req, res) => {
 });
 
 // show
-router.get("/:username", (req, res) => {
+router.get("/:username", util.isLoggedin, checkPermission, (req, res) => {
   User.findOne({ username: req.params.username }, (err, user) => {
     console.log(user);
     if (err) return res.json(err);
@@ -44,7 +34,7 @@ router.get("/:username", (req, res) => {
 });
 
 // edit
-router.get("/:username/edit", (req, res) => {
+router.get("/:username/edit", util.isLoggedin, checkPermission, (req, res) => {
   const user = req.flash("user")[0];
   const errors = req.flash("errors")[0] || {};
   if (!user) {
@@ -66,7 +56,7 @@ router.get("/:username/edit", (req, res) => {
 });
 
 // update/
-router.put("/:username", (req, res, next) => {
+router.put("/:username", util.isLoggedin, checkPermission, (req, res, next) => {
   User.findOne({ username: req.params.username })
     .select("password") // 항목이름앞에 - 붙이면 안읽어옴 ex ) ('-password name')
     .exec((err, user) => {
@@ -91,12 +81,12 @@ router.put("/:username", (req, res, next) => {
     });
 });
 
-// destory
-router.delete("/:username", (req, res) => {
-  User.deleteOne({ username: req.params.username }, (err) => {
-    if (err) return res.json(err);
-    res.redirect("/users");
-  });
-});
-
 export default router;
+
+function checkPermission(req, res, next) {
+  User.findOne({ username: req.params.username }, (err, user) => {
+    if (err) return res.json(err);
+    if (user.id != req.user.id) return util.noPermission(req, res);
+    next();
+  });
+}
