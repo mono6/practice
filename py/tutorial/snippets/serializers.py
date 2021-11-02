@@ -1,12 +1,14 @@
 from rest_framework import serializers
 from snippets.models import Snippet, LAGUAGE_CHOICES, SYTLE_CHOICES
 
+
 class SnippetSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    title = serializers.CharField(required=False, allow_blank= True)
-    code = serializers.CharField(style = {'base_template':'textarea.html'})
+    title = serializers.CharField(required=False, allow_blank=True)
+    code = serializers.CharField(style={'base_template': 'textarea.html'})
     linenos = serializers.BooleanField(required=False)
-    language = serializers.ChoiceField(choices = LAGUAGE_CHOICES, default ='python')
+    language = serializers.ChoiceField(
+        choices=LAGUAGE_CHOICES, default='python')
     style = serializers.ChoiceField(choices=LAGUAGE_CHOICES, default='python')
 
     def create(self, validated_data):
