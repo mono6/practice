@@ -4,14 +4,31 @@ import util from "../util.js";
 const router = express.Router();
 
 // Index
-router.get("/", (req, res) => {
-  Post.find({})
+router.get("/", async (req, res) => {
+  // parseInt : 쿼리스트링은 문자열로 전달되기 때문에 숫자가 아닐수도있고, 정수를 읽어내기 위해
+  //Math.max : page,limit은 양수여야 하기때문 최소 1이 되어야함
+
+  let page = Math.max(1, parseInt(req.query.page));
+  let limit = Math.max(1, parseInt(req.query.limit));
+  page = !isNaN(page) ? page : 1;
+  limit = !isNaN(limit) ? limit : 5;
+
+  const skip = (page - 1) * limit;
+  const count = await Post.countDocuments({});
+  const maxPage = Math.ceil(count / limit);
+  const posts = await Post.find({})
     .populate("author")
     .sort("-createdAt")
-    .exec((err, posts) => {
-      if (err) return res.json(err);
-      res.render("posts/index", { posts: posts });
-    });
+    .skip(skip)
+    .limit(limit)
+    .exec();
+
+  res.render("posts/index", {
+    posts: posts,
+    currentPage: page,
+    maxPage: maxPage,
+    limit: limit,
+  });
 });
 
 // New
