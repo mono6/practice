@@ -27,4 +27,29 @@ util.noPermission = (req, res) => {
   req.logout();
   req.redirect("/login");
 };
+
+util.getPostQueryString = (req, res, next) => {
+  res.locals.getPostQueryString = (isAppended = false, overwrites = {}) => {
+    let queryString = "";
+    let queryArray = [];
+    let page = overwrites.page
+      ? overwrites.page
+      : req.query.page
+      ? req.query.page
+      : "";
+    let limit = overwrites.limit
+      ? overwrites.limit
+      : req.query.limit
+      ? req.query.limit
+      : "";
+
+    if (page) queryArray.push("page=" + page);
+    if (limit) queryArray.push("limit=" + limit);
+
+    if (queryArray.length > 0)
+      queryString = (isAppended ? "&" : "?") + queryArray.join("&");
+    return queryString;
+  };
+  next();
+};
 export default util;

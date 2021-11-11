@@ -10,6 +10,7 @@ import passport from "./config/passport.js";
 import homeRouter from "./routes/home.js";
 import postsRouter from "./routes/posts.js";
 import userRouter from "./routes/users.js";
+import util from "./util.js";
 const __dirname = path.resolve();
 const app = express();
 dotenv.config();
@@ -47,7 +48,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use("/", homeRouter);
-app.use("/posts", postsRouter);
+app.use("/posts", util.getPostQueryString, postsRouter);
 app.use("/users", userRouter);
 
 app.use((err, req, res, next) => {
