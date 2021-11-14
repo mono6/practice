@@ -13,10 +13,12 @@ router.get("/", async (req, res) => {
   page = !isNaN(page) ? page : 1;
   limit = !isNaN(limit) ? limit : 5;
 
+  let searchQuery = createSearchQuery(req.query);
+
   const skip = (page - 1) * limit;
-  const count = await Post.countDocuments({});
+  const count = await Post.countDocuments(searchQuery);
   const maxPage = Math.ceil(count / limit);
-  const posts = await Post.find({})
+  const posts = await Post.find(searchQuery)
     .populate("author")
     .sort("-createdAt")
     .skip(skip)
@@ -28,6 +30,8 @@ router.get("/", async (req, res) => {
     currentPage: page,
     maxPage: maxPage,
     limit: limit,
+    searchType: req.query.searchType,
+    searchText: req.query.searchText,
   });
 });
 
@@ -48,7 +52,10 @@ router.post("/", util.isLoggedin, (req, res) => {
       req.flash("error", util.parseError(err));
       return res.redirect("/posts/new" + res.locals.getPostQueryString());
     }
-    res.redirect("/posts" + res.locals.getPostQueryString(false, { page: 1 }));
+    res.redirect(
+      "/posts" +
+        res.locals.getPostQueryString(false, { page: 1, searchText: "" })
+    );
   });
 });
 
@@ -114,4 +121,28 @@ function checkPermission(req, res, next) {
     if (post.author != req.user.id) return util.noPermission(req, res);
     next();
   });
+}
+
+function createSearchQuery(queries) {
+  let searchQuery = {};
+  if (
+    queries.searchType &&
+    queries.searchText &&
+    queries.searchText.length >= 3
+  ) {
+    let searchTypes = queries.searchType.toLowerCase().split(",");
+    let postQueries = [];
+    if (searchTypes.indexOf("title") >= 0) {
+      postQueries.push({
+        title: { $regex: new RegExp(queries.searchText, "i") },
+      });
+    }
+    if (searchTypes.indexOf("body") >= 0) {
+      postQueries.push({
+        body: { $regex: new RegExp(queries.searchText, "i") },
+      });
+    }
+    if (postQueries.length > 0) searchQuery = { $or: postQueries };
+  }
+  return searchQuery;
 }

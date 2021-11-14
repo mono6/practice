@@ -42,9 +42,21 @@ util.getPostQueryString = (req, res, next) => {
       : req.query.limit
       ? req.query.limit
       : "";
+    let searchType = overwrites.searchType
+      ? overwrites.searchType
+      : req.query.searchType
+      ? req.query.searchType
+      : "";
+    let searchText = overwrites.searchText
+      ? overwrite.searchText
+      : req.query.searchText
+      ? req.query.searchText
+      : "";
 
     if (page) queryArray.push("page=" + page);
     if (limit) queryArray.push("limit=" + limit);
+    if (searchType) queryArray.push("searchType=" + searchType);
+    if (searchText) queryArray.push("searchText=" + searchText);
 
     if (queryArray.length > 0)
       queryString = (isAppended ? "&" : "?") + queryArray.join("&");
