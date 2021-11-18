@@ -48,7 +48,7 @@ util.getPostQueryString = (req, res, next) => {
       ? req.query.searchType
       : "";
     let searchText = overwrites.searchText
-      ? overwrite.searchText
+      ? overwrites.searchText
       : req.query.searchText
       ? req.query.searchText
       : "";

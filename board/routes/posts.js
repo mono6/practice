@@ -1,6 +1,7 @@
-import Post from "../models/post.js";
+import Post from "../models/Post.js";
 import express from "express";
 import util from "../util.js";
+import User from "../models/User.js";
 const router = express.Router();
 
 // Index
@@ -13,18 +14,21 @@ router.get("/", async (req, res) => {
   page = !isNaN(page) ? page : 1;
   limit = !isNaN(limit) ? limit : 5;
 
-  let searchQuery = createSearchQuery(req.query);
-
   const skip = (page - 1) * limit;
-  const count = await Post.countDocuments(searchQuery);
-  const maxPage = Math.ceil(count / limit);
-  const posts = await Post.find(searchQuery)
-    .populate("author")
-    .sort("-createdAt")
-    .skip(skip)
-    .limit(limit)
-    .exec();
+  let maxPage = 0;
+  let searchQuery = await createSearchQuery(req.query);
+  let posts = [];
 
+  if (searchQuery) {
+    let count = await Post.countDocuments(searchQuery);
+    maxPage = Math.ceil(count / limit);
+    posts = await Post.find(searchQuery)
+      .populate("author")
+      .sort("-createdAt")
+      .skip(skip)
+      .limit(limit)
+      .exec();
+  }
   res.render("posts/index", {
     posts: posts,
     currentPage: page,
@@ -123,7 +127,7 @@ function checkPermission(req, res, next) {
   });
 }
 
-function createSearchQuery(queries) {
+async function createSearchQuery(queries) {
   let searchQuery = {};
   if (
     queries.searchType &&
@@ -142,7 +146,21 @@ function createSearchQuery(queries) {
         body: { $regex: new RegExp(queries.searchText, "i") },
       });
     }
+    if (searchTypes.indexOf("author!") >= 0) {
+      let user = await User.findOne({ username: queries.searchText }).exec();
+      if (user) postQueries.push({ author: user._id });
+    } else if (searchTypes.indexOf("author") >= 0) {
+      let users = await User.find({
+        username: { $regex: new Reg(queries.searchText, "i") },
+      }).exec();
+      let userIds = [];
+      for (let user of users) {
+        userIds.push(user._id);
+      }
+      if (userIds.length > 0) postQueries.push({ author: { $in: userIds } });
+    }
     if (postQueries.length > 0) searchQuery = { $or: postQueries };
+    else searchQuery = null;
   }
   return searchQuery;
 }

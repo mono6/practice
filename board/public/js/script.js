@@ -48,3 +48,38 @@ $(function () {
   convertDate();
   convertDateTime();
 });
+$(function () {
+  let search = window.location.search;
+  let params = {};
+
+  // 크롬이나 사파리는 필요없음 IE에서 불가능 하기 때문에 직접코딩
+  if (search) {
+    $.each(search.slice(1).split("&"), (index, param) => {
+      let index = param.indexOf("=");
+      if (index > 0) {
+        let key = param.slice(0, index);
+        let value = param.slice(index + 1);
+
+        if (!params[key]) params[key] = value;
+      }
+    });
+  }
+
+  if (params.searchText && nparams.searchText.length >= 3) {
+    $("[data-search-highlight]").each(function (index, element) {
+      let $element = $(element);
+      let searchHighlight = $element.data("search-highlight");
+      let index = params.searchText.indexOf(searchHighlight);
+
+      if (index >= 0) {
+        let decodedSearchText = params.searchText.replace(/\+/g, " ");
+        decodedSearchText = decodeURI(decodedSearchText);
+
+        let regex = new RegExp(`(${decodedSearchText})`, "ig");
+        $element.html(
+          $element.html().replace(regex, '<span class="highlighted">$1</span>')
+        );
+      }
+    });
+  }
+});
